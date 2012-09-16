@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="8dp"
+    >
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/border"
+    android:padding="6dp"
+    >
+
+  <TextView
+      android:text="99 mmm"
+      android:id="@+id/datum1"
+      android:maxLines="1"
+      android:ellipsize="end"
+      android:textSize="11dp"
+      android:textColor="#EEEEEE"
+      android:layout_width="50dp"
+      android:layout_height="wrap_content"
+      />
+
+  <TextView
+      android:text="Namn Ett Svensson"
+      android:maxLines="1"
+      android:ellipsize="end"
+      android:textSize="11dp"
+      android:textColor="#EEEEEE"
+      android:layout_toRightOf="@id/datum1"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      />
+
+  <TextView
+      android:text="datum2"
+      android:id="@+id/datum2"
+      android:maxLines="1"
+      android:ellipsize="end"
+      android:textSize="11dp"
+      android:textColor="#EEEEEE"
+      android:layout_below="@id/datum1"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      />
+
+  <TextView
+      android:text="Namn Två"
+      android:maxLines="1"
+      android:ellipsize="end"
+      android:textSize="11dp"
+      android:textColor="#EEEEEE"
+      android:layout_below="@id/datum1"
+      android:layout_toRightOf="@id/datum1"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      />
+
+  <TextView
+      android:text="datum3"
+      android:id="@+id/datum3"
+      android:maxLines="1"
+      android:ellipsize="end"
+      android:textSize="11dp"
+      android:textColor="#EEEEEE"
+      android:layout_below="@id/datum2"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      />
+
+  <TextView
+      android:text="Namn Tre"
+      android:maxLines="1"
+      android:ellipsize="end"
+      android:textSize="11dp"
+      android:textColor="#EEEEEE"
+      android:layout_below="@id/datum2"
+      android:layout_toRightOf="@id/datum1"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      />
+
+</RelativeLayout>
+</FrameLayout>
