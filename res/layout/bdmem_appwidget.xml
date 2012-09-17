@@ -9,7 +9,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/border"
-    android:padding="6dp"
+    android:paddingLeft="6dp"
+    android:paddingRight="6dp"
+    android:paddingTop="3dp"
+    android:paddingBottom="0dp"
     >
 
   <TextView
@@ -25,6 +28,7 @@
 
   <TextView
       android:text="Namn Ett Svensson"
+      android:id="@+id/namn1"
       android:maxLines="1"
       android:ellipsize="end"
       android:textSize="11dp"
@@ -48,6 +52,7 @@
 
   <TextView
       android:text="Namn Två"
+      android:id="@+id/namn2"
       android:maxLines="1"
       android:ellipsize="end"
       android:textSize="11dp"
@@ -72,11 +77,62 @@
 
   <TextView
       android:text="Namn Tre"
+      android:id="@+id/namn3"
       android:maxLines="1"
       android:ellipsize="end"
       android:textSize="11dp"
       android:textColor="#EEEEEE"
       android:layout_below="@id/datum2"
+      android:layout_toRightOf="@id/datum1"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      />
+
+  <TextView
+      android:text="datum4"
+      android:id="@+id/datum4"
+      android:maxLines="1"
+      android:ellipsize="end"
+      android:textSize="11dp"
+      android:textColor="#EEEEEE"
+      android:layout_below="@id/datum3"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      />
+
+  <TextView
+      android:text="Namn Fyra"
+      android:id="@+id/namn4"
+      android:maxLines="1"
+      android:ellipsize="end"
+      android:textSize="11dp"
+      android:textColor="#EEEEEE"
+      android:layout_below="@id/datum3"
+      android:layout_toRightOf="@id/datum1"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      />
+
+  <TextView
+      android:text="datum5"
+      android:id="@+id/datum5"
+      android:maxLines="1"
+      android:ellipsize="end"
+      android:textSize="11dp"
+      android:textColor="#EEEEEE"
+      android:layout_below="@id/datum4"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      />
+
+  <TextView
+      android:text="Namn Fem"
+      android:id="@+id/namn5"
+      android:maxLines="1"
+      android:ellipsize="end"
+      android:textSize="11dp"
+      android:textColor="#EEEEEE"
+      android:layout_below="@id/datum4"
       android:layout_toRightOf="@id/datum1"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"

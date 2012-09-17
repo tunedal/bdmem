@@ -21,4 +21,5 @@
                      android:resource="@xml/bdmem_appwidget_info" />
         </receiver>
     </application>
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 </manifest>
