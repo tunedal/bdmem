@@ -8,6 +8,8 @@ import android.database.Cursor;
 import android.provider.ContactsContract;
 import android.util.Pair;
 import android.widget.RemoteViews;
+import android.widget.TextView;
+import android.widget.LinearLayout;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,20 +25,22 @@ public class BDMemWidget extends AppWidgetProvider {
         for (int i=0; i < appWidgetIds.length; i++) {
             RemoteViews views = new RemoteViews(context.getPackageName(),
                                                 R.layout.bdmem_appwidget);
-            int[] dates = {R.id.datum1, R.id.datum2, R.id.datum3,
-                           R.id.datum4, R.id.datum5};
-            int[] names = {R.id.namn1, R.id.namn2, R.id.namn3,
-                           R.id.namn4, R.id.namn5};
             int j = 0;
             for (Pair<String,String> p : getBirthdays(context)) {
-                views.setTextViewText(dates[j], p.first);
-                views.setTextViewText(names[j], p.second);
-                if (++j == dates.length)
+                RemoteViews row = new RemoteViews(context.getPackageName(),
+                                                  R.layout.widget_row);
+                row.setTextViewText(R.id.datum, p.first);
+                row.setTextViewText(R.id.namn, p.second);
+                views.addView(R.id.container, row);
+                System.out.println("getBirthdays: " + p.first + ", "
+                                   + p.second);
+                if (++j == 5)
                     break;
             }
             System.out.println("Sleeping...");
             try {
-                Thread.sleep(30000);
+                //Thread.sleep(30000);
+                Thread.sleep(100);
             }
             catch (InterruptedException ex) {
             }
@@ -44,6 +48,25 @@ public class BDMemWidget extends AppWidgetProvider {
             appWidgetManager.updateAppWidget(appWidgetIds[i], views);
         }
     }
+
+    /*
+    private void addLine(RemoteViews views, String text1, String text2) {
+        LinearLayout layout = new LinearLayout();
+        TextView a = new TextView();
+        a.setText(text1);
+        a.setMaxLines(1);
+        a.setTextSize(11);
+        a.setTextColor(0xEEEEEE);
+        layout.addView(a);
+        TextView b = new TextView();
+        b.setText(text2);
+        b.setMaxLines(1);
+        b.setTextSize(11);
+        b.setTextColor(0xEEEEEE);
+        layout.addView(b);
+        views.addView(R.id.container, layout);
+    }
+    */
 
     public List<Pair<String,String>> getBirthdays(Context context) {
         String[] projection = {
@@ -61,15 +84,18 @@ public class BDMemWidget extends AppWidgetProvider {
                         " = ?");
         Cursor cur = resolver.query(ContactsContract.Data.CONTENT_URI,
                                     projection,
-                                    where,
-                                    new String[] {
-                                        Event.CONTENT_ITEM_TYPE,
-                                        "" + Event.TYPE_BIRTHDAY
-                                    },
+                                    // where,
+                                    // new String[] {
+                                    //     Event.CONTENT_ITEM_TYPE,
+                                    //     "" + Event.TYPE_BIRTHDAY
+                                    // },
+                                    null,
+                                    null,
                                     ContactsContract.Data._ID + " ASC");
         List<Pair<String,String>> list = new ArrayList<Pair<String,String>>();
         list.add(Pair.create("Rader:", "" + cur.getCount()));
-        String[] ignorables = {"name", "phone_v2", "email_v2", "photo"};
+        //String[] ignorables = {"name", "phone_v2", "email_v2", "photo"};
+        String[] ignorables = {"name", "email_v2", "photo"};
         Map<String,String> birthdays = new HashMap<String,String>();
         Map<String,String> nicknames = new HashMap<String,String>();
         while (cur.moveToNext()) {
