@@ -6,6 +6,7 @@
       >
     <application android:label="@string/app_name"
                  android:icon="@drawable/presentblue" >
+        <!--
         <activity android:name="BDMemApp"
                   android:label="@string/app_name">
             <intent-filter>
@@ -13,6 +14,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        -->
         <receiver android:name="BDMemWidget" >
           <intent-filter>
             <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

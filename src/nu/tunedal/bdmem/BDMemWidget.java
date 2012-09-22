@@ -25,48 +25,30 @@ public class BDMemWidget extends AppWidgetProvider {
         for (int i=0; i < appWidgetIds.length; i++) {
             RemoteViews views = new RemoteViews(context.getPackageName(),
                                                 R.layout.bdmem_appwidget);
-            int j = 0;
+            views.removeAllViews(R.id.container);
             for (Pair<String,String> p : getBirthdays(context)) {
                 RemoteViews row = new RemoteViews(context.getPackageName(),
                                                   R.layout.widget_row);
                 row.setTextViewText(R.id.datum, p.first);
                 row.setTextViewText(R.id.namn, p.second);
                 views.addView(R.id.container, row);
-                System.out.println("getBirthdays: " + p.first + ", "
-                                   + p.second);
-                if (++j == 5)
-                    break;
+                System.out.println("getBirthdays: " + p.first
+                                   + ", " + p.second);
             }
+            // TODO: Uppdatera med Service istället, eftersom det kan
+            // ta en stund att köra queryn.
+            /*
             System.out.println("Sleeping...");
             try {
-                //Thread.sleep(30000);
-                Thread.sleep(100);
+                Thread.sleep(30000);
             }
             catch (InterruptedException ex) {
             }
             System.out.println("Awake!");
+            */
             appWidgetManager.updateAppWidget(appWidgetIds[i], views);
         }
     }
-
-    /*
-    private void addLine(RemoteViews views, String text1, String text2) {
-        LinearLayout layout = new LinearLayout();
-        TextView a = new TextView();
-        a.setText(text1);
-        a.setMaxLines(1);
-        a.setTextSize(11);
-        a.setTextColor(0xEEEEEE);
-        layout.addView(a);
-        TextView b = new TextView();
-        b.setText(text2);
-        b.setMaxLines(1);
-        b.setTextSize(11);
-        b.setTextColor(0xEEEEEE);
-        layout.addView(b);
-        views.addView(R.id.container, layout);
-    }
-    */
 
     public List<Pair<String,String>> getBirthdays(Context context) {
         String[] projection = {
@@ -84,21 +66,19 @@ public class BDMemWidget extends AppWidgetProvider {
                         " = ?");
         Cursor cur = resolver.query(ContactsContract.Data.CONTENT_URI,
                                     projection,
-                                    // where,
-                                    // new String[] {
-                                    //     Event.CONTENT_ITEM_TYPE,
-                                    //     "" + Event.TYPE_BIRTHDAY
-                                    // },
-                                    null,
-                                    null,
+                                    where,
+                                    new String[] {
+                                        Event.CONTENT_ITEM_TYPE,
+                                        "" + Event.TYPE_BIRTHDAY
+                                    },
                                     ContactsContract.Data._ID + " ASC");
         List<Pair<String,String>> list = new ArrayList<Pair<String,String>>();
         list.add(Pair.create("Rader:", "" + cur.getCount()));
-        //String[] ignorables = {"name", "phone_v2", "email_v2", "photo"};
-        String[] ignorables = {"name", "email_v2", "photo"};
+        int j = 1;
+        String[] ignorables = {"name", "phone_v2", "email_v2", "photo"};
         Map<String,String> birthdays = new HashMap<String,String>();
         Map<String,String> nicknames = new HashMap<String,String>();
-        while (cur.moveToNext()) {
+        while (cur.moveToNext() && j++ < 5) {
             birthdays.put(cur.getString(1), cur.getString(2));
             boolean ignore = false;
             for (String s : ignorables) {
@@ -117,8 +97,6 @@ public class BDMemWidget extends AppWidgetProvider {
         }
         System.out.println(TextUtils.join(", ", birthdays.keySet()));
         // TODO: query mot kontakttabellen för att översätta id:n till namn.
-        // ...och lägg till views dynamiskt:
-        // http://stackoverflow.com/questions/4078039
         for (Map.Entry<String,String> entry : birthdays.entrySet()) {
             list.add(Pair.create(entry.getKey(), entry.getValue()));
         }
