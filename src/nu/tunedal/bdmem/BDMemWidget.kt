@@ -8,6 +8,8 @@ import android.provider.ContactsContract
 import android.widget.RemoteViews
 import android.provider.ContactsContract.CommonDataKinds.Event
 import java.util.Calendar
+import android.app.PendingIntent
+import android.content.Intent
 
 class CursorIterator(val cursor: Cursor): Iterator<Cursor> {
     override fun next() = cursor.apply { moveToNext() }
@@ -39,6 +41,17 @@ class BDMemWidget : AppWidgetProvider() {
             val views = RemoteViews(context.packageName,
                     R.layout.bdmem_appwidget)
             views.removeAllViews(R.id.container)
+
+            val updateIntent = Intent().apply {
+                action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,
+                         intArrayOf(widgetId))
+            }
+            val pendingIntent = PendingIntent.getBroadcast(
+                    context, 0, updateIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT)
+            views.setOnClickPendingIntent(R.id.container, pendingIntent)
+
             for ((namn, datum) in getBirthdays(context).take(5)) {
                 val row = RemoteViews(context.packageName,
                         R.layout.widget_row)
