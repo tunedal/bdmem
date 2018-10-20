@@ -13,8 +13,9 @@ import android.content.Intent
 import android.util.Log
 
 class CursorIterator(val cursor: Cursor): Iterator<Cursor> {
-    override fun next() = cursor.apply { moveToNext() }
-    override fun hasNext() = !cursor.isLast
+    private var valid = cursor.moveToFirst().also { cursor.move(-1) }
+    override fun next() = cursor.apply { valid = moveToNext() }
+    override fun hasNext() = valid && !cursor.isLast
 }
 
 operator fun Cursor.iterator() = CursorIterator(this)
@@ -99,9 +100,14 @@ class BDMemWidget : AppWidgetProvider() {
         val birthdays = cursor.iterator().asSequence().map {
             Birthday(it.getString(2), it.getString(3))
         }.sortedBy { it.birthday }.toList()
-        val nextIndex = birthdays.indexOfFirst { it.birthday >= now }
-                .let { if (it == -1) 0 else it }  // ta första om ingen hittas
-        log.debug("Next birthday: index $nextIndex, ${birthdays[nextIndex]}")
-        return birthdays.rotated(1 - nextIndex)
+        if (birthdays.isEmpty()) {
+            return emptyList()
+        }
+        else {
+            val nextIndex = birthdays.indexOfFirst { it.birthday >= now }
+                    .let { if (it == -1) 0 else it }  // första om ingen hittas
+            log.debug("Next birthday: index $nextIndex, ${birthdays[nextIndex]}")
+            return birthdays.rotated(1 - nextIndex)
+        }
     }
 }
