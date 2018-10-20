@@ -16,7 +16,16 @@ class CursorIterator(val cursor: Cursor): Iterator<Cursor> {
 
 operator fun Cursor.iterator() = CursorIterator(this)
 
-data class Birthday(val name: String, val date: String)
+data class Birthday(val name: String, val date: String) {
+    val birthday get() = date.substring(5)
+}
+
+fun <T> MutableList<T>.rotate(offset: Int) {
+    java.util.Collections.rotate(this, offset)
+}
+
+fun <T> Collection<T>.rotated(offset: Int): List<T> =
+        toMutableList().apply { rotate(offset) }
 
 class BDMemWidget : AppWidgetProvider() {
     override fun onUpdate(context: Context,
@@ -61,7 +70,9 @@ class BDMemWidget : AppWidgetProvider() {
         val now = Date().let { "%02d-%02d".format(it.month, it.day) }
         val birthdays = cursor.iterator().asSequence().map {
             Birthday(it.getString(2), it.getString(3))
-        }.filter { it.date.substring(5) > now }
-        return birthdays.sortedBy { it.date.substring(5) }.toList()
+        }.sortedBy { it.birthday }.toList()
+        val nextBirthdayPos = birthdays.indexOfFirst { it.birthday >= now }
+                .let { if (it == -1) 0 else it }  // ta första om ingen hittas
+        return birthdays.rotated(1 - nextBirthdayPos)
     }
 }
