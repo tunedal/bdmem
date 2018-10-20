@@ -7,7 +7,7 @@ import android.database.Cursor
 import android.provider.ContactsContract
 import android.widget.RemoteViews
 import android.provider.ContactsContract.CommonDataKinds.Event
-import java.util.Date
+import java.util.Calendar
 
 class CursorIterator(val cursor: Cursor): Iterator<Cursor> {
     override fun next() = cursor.apply { moveToNext() }
@@ -27,6 +27,9 @@ fun <T> MutableList<T>.rotate(offset: Int) {
 fun <T> Collection<T>.rotated(offset: Int): List<T> =
         toMutableList().apply { rotate(offset) }
 
+val Calendar.month get() = get(Calendar.MONTH) + 1
+val Calendar.dayOfMonth get() = get(Calendar.DAY_OF_MONTH)
+
 class BDMemWidget : AppWidgetProvider() {
     override fun onUpdate(context: Context,
                           appWidgetManager: AppWidgetManager,
@@ -36,7 +39,7 @@ class BDMemWidget : AppWidgetProvider() {
             val views = RemoteViews(context.packageName,
                     R.layout.bdmem_appwidget)
             views.removeAllViews(R.id.container)
-            for ((namn, datum) in getBirthdays(context)) {
+            for ((namn, datum) in getBirthdays(context).take(5)) {
                 val row = RemoteViews(context.packageName,
                         R.layout.widget_row)
                 row.setTextViewText(R.id.datum, datum)
@@ -67,12 +70,15 @@ class BDMemWidget : AppWidgetProvider() {
                 where,
                 arrayOf(Event.CONTENT_ITEM_TYPE, "" + Event.TYPE_BIRTHDAY),
                 null)
-        val now = Date().let { "%02d-%02d".format(it.month, it.day) }
+        val now = Calendar.getInstance().let {
+            "%02d-%02d".format(it.month, it.dayOfMonth)
+        }
         val birthdays = cursor.iterator().asSequence().map {
             Birthday(it.getString(2), it.getString(3))
         }.sortedBy { it.birthday }.toList()
-        val nextBirthdayPos = birthdays.indexOfFirst { it.birthday >= now }
+        val nextIndex = birthdays.indexOfFirst { it.birthday >= now }
                 .let { if (it == -1) 0 else it }  // ta första om ingen hittas
-        return birthdays.rotated(1 - nextBirthdayPos)
+        println("Next birthday: index $nextIndex, ${birthdays[nextIndex]}")
+        return birthdays.rotated(1 - nextIndex)
     }
 }
