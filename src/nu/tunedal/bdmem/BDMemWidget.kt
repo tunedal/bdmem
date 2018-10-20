@@ -3,9 +3,20 @@ package nu.tunedal.bdmem
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
+import android.database.Cursor
 import android.provider.ContactsContract
 import android.widget.RemoteViews
 import android.provider.ContactsContract.CommonDataKinds.Event
+import java.util.Date
+
+class CursorIterator(val cursor: Cursor): Iterator<Cursor> {
+    override fun next() = cursor.apply { moveToNext() }
+    override fun hasNext() = !cursor.isLast
+}
+
+operator fun Cursor.iterator() = CursorIterator(this)
+
+data class Birthday(val name: String, val date: String)
 
 class BDMemWidget : AppWidgetProvider() {
     override fun onUpdate(context: Context,
@@ -16,7 +27,7 @@ class BDMemWidget : AppWidgetProvider() {
             val views = RemoteViews(context.packageName,
                     R.layout.bdmem_appwidget)
             views.removeAllViews(R.id.container)
-            for ((datum, namn) in getBirthdays(context)) {
+            for ((namn, datum) in getBirthdays(context)) {
                 val row = RemoteViews(context.packageName,
                         R.layout.widget_row)
                 row.setTextViewText(R.id.datum, datum)
@@ -24,25 +35,16 @@ class BDMemWidget : AppWidgetProvider() {
                 views.addView(R.id.container, row)
                 println("getBirthdays: ${datum}, ${namn}")
             }
-            // TODO: Uppdatera med Service istället, eftersom det kan
-            // ta en stund att köra queryn.
-            /*
-            System.out.println("Sleeping...");
-            try {
-                Thread.sleep(30000);
-            }
-            catch (InterruptedException ex) {
-            }
-            System.out.println("Awake!");
-            */
+            // TODO: Uppdatera med Service istället.
             appWidgetManager.updateAppWidget(widgetId, views)
         }
     }
 
-    fun getBirthdays(context: Context): List<Pair<String, String>> {
+    fun getBirthdays(context: Context): List<Birthday> {
         val projection = arrayOf(
                 ContactsContract.Data._ID,
                 Event.CONTACT_ID,
+                ContactsContract.Contacts.DISPLAY_NAME,
                 Event.START_DATE,
                 Event.TYPE,
                 ContactsContract.Data.MIMETYPE)
@@ -51,35 +53,15 @@ class BDMemWidget : AppWidgetProvider() {
                 " = ? AND " +
                 ContactsContract.Data.DATA2 +
                 " = ?"
-        val cur = resolver.query(ContactsContract.Data.CONTENT_URI,
+        val cursor = resolver.query(ContactsContract.Data.CONTENT_URI,
                 projection,
                 where,
                 arrayOf(Event.CONTENT_ITEM_TYPE, "" + Event.TYPE_BIRTHDAY),
-                ContactsContract.Data._ID + " ASC")
-        val list = mutableListOf<Pair<String, String>>()
-        list.add(Pair("Rader:", cur.count.toString()))
-        var j = 1
-        val ignorables = arrayOf("name", "phone_v2", "email_v2", "photo")
-        val birthdays = mutableMapOf<String, String>()
-        val nicknames = mutableMapOf<String, String>()
-        while (cur.moveToNext() && j++ < 5) {
-            birthdays[cur.getString(1)] = cur.getString(2)
-            var ignore = false
-            for (s in ignorables) {
-                if (cur.getString(projection.size - 1).endsWith("/$s")) {
-                    ignore = true
-                    break
-                }
-            }
-            if (ignore) continue
-            println((0 until cur.columnCount).map(cur::getString)
-                    .joinToString(", "))
-        }
-        println(birthdays.keys.joinToString(", "))
-        // TODO: query mot kontakttabellen för att översätta id:n till namn.
-        for ((key, value) in birthdays) {
-            list.add(Pair(key, value))
-        }
-        return list
+                null)
+        val now = Date().let { "%02d-%02d".format(it.month, it.day) }
+        val birthdays = cursor.iterator().asSequence().map {
+            Birthday(it.getString(2), it.getString(3))
+        }.filter { it.date.substring(5) > now }
+        return birthdays.sortedBy { it.date.substring(5) }.toList()
     }
 }

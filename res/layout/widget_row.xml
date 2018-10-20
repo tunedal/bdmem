@@ -11,7 +11,7 @@
       android:ellipsize="end"
       android:textSize="11dp"
       android:textColor="#EEEEEE"
-      android:layout_width="50dp"
+      android:layout_width="64dp"
       android:layout_height="wrap_content"
       />
   <TextView
