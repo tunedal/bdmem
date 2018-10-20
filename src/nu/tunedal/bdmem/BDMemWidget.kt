@@ -2,17 +2,9 @@ package nu.tunedal.bdmem
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
-import android.content.ContentResolver
 import android.content.Context
-import android.database.Cursor
 import android.provider.ContactsContract
-import android.util.Pair
 import android.widget.RemoteViews
-import android.widget.TextView
-import android.widget.LinearLayout
-import java.util.ArrayList
-import java.util.HashMap
-import android.text.TextUtils
 import android.provider.ContactsContract.CommonDataKinds.Event
 
 class BDMemWidget : AppWidgetProvider() {
@@ -20,18 +12,17 @@ class BDMemWidget : AppWidgetProvider() {
                           appWidgetManager: AppWidgetManager,
                           appWidgetIds: IntArray) {
         println("Sweet zombie Jesus!")
-        for (i in appWidgetIds.indices) {
+        for (widgetId in appWidgetIds) {
             val views = RemoteViews(context.packageName,
                     R.layout.bdmem_appwidget)
             views.removeAllViews(R.id.container)
-            for (p in getBirthdays(context)) {
+            for ((datum, namn) in getBirthdays(context)) {
                 val row = RemoteViews(context.packageName,
                         R.layout.widget_row)
-                row.setTextViewText(R.id.datum, p.first)
-                row.setTextViewText(R.id.namn, p.second)
+                row.setTextViewText(R.id.datum, datum)
+                row.setTextViewText(R.id.namn, namn)
                 views.addView(R.id.container, row)
-                println("getBirthdays: " + p.first
-                        + ", " + p.second)
+                println("getBirthdays: ${datum}, ${namn}")
             }
             // TODO: Uppdatera med Service istället, eftersom det kan
             // ta en stund att köra queryn.
@@ -44,7 +35,7 @@ class BDMemWidget : AppWidgetProvider() {
             }
             System.out.println("Awake!");
             */
-            appWidgetManager.updateAppWidget(appWidgetIds[i], views)
+            appWidgetManager.updateAppWidget(widgetId, views)
         }
     }
 
@@ -55,7 +46,6 @@ class BDMemWidget : AppWidgetProvider() {
                 Event.START_DATE,
                 Event.TYPE,
                 ContactsContract.Data.MIMETYPE)
-
         val resolver = context.contentResolver
         val where = ContactsContract.Data.MIMETYPE +
                 " = ? AND " +
@@ -66,12 +56,12 @@ class BDMemWidget : AppWidgetProvider() {
                 where,
                 arrayOf(Event.CONTENT_ITEM_TYPE, "" + Event.TYPE_BIRTHDAY),
                 ContactsContract.Data._ID + " ASC")
-        val list = ArrayList<Pair<String, String>>()
-        list.add(Pair.create("Rader:", "" + cur!!.count))
+        val list = mutableListOf<Pair<String, String>>()
+        list.add(Pair("Rader:", cur.count.toString()))
         var j = 1
         val ignorables = arrayOf("name", "phone_v2", "email_v2", "photo")
-        val birthdays = HashMap<String, String>()
-        val nicknames = HashMap<String, String>()
+        val birthdays = mutableMapOf<String, String>()
+        val nicknames = mutableMapOf<String, String>()
         while (cur.moveToNext() && j++ < 5) {
             birthdays[cur.getString(1)] = cur.getString(2)
             var ignore = false
@@ -82,17 +72,13 @@ class BDMemWidget : AppWidgetProvider() {
                 }
             }
             if (ignore) continue
-            val sb = StringBuilder()
-            for (i in projection.indices) {
-                sb.append(", ")
-                sb.append(cur.getString(i))
-            }
-            println(sb.toString())
+            println((0 until cur.columnCount).map(cur::getString)
+                    .joinToString(", "))
         }
-        println(TextUtils.join(", ", birthdays.keys))
+        println(birthdays.keys.joinToString(", "))
         // TODO: query mot kontakttabellen för att översätta id:n till namn.
         for ((key, value) in birthdays) {
-            list.add(Pair.create(key, value))
+            list.add(Pair(key, value))
         }
         return list
     }
