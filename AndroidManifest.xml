@@ -24,4 +24,5 @@
         </receiver>
     </application>
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-sdk android:minSdkVersion="10" />
 </manifest>
