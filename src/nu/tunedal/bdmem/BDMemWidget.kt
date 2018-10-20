@@ -10,6 +10,7 @@ import android.provider.ContactsContract.CommonDataKinds.Event
 import java.util.Calendar
 import android.app.PendingIntent
 import android.content.Intent
+import android.util.Log
 
 class CursorIterator(val cursor: Cursor): Iterator<Cursor> {
     override fun next() = cursor.apply { moveToNext() }
@@ -32,11 +33,20 @@ fun <T> Collection<T>.rotated(offset: Int): List<T> =
 val Calendar.month get() = get(Calendar.MONTH) + 1
 val Calendar.dayOfMonth get() = get(Calendar.DAY_OF_MONTH)
 
+object log {
+    private const val tag = "BDMem"
+    fun verbose(msg: String) = Log.v(tag, msg)
+    fun debug(msg: String) = Log.d(tag, msg)
+    fun info(msg: String) = Log.i(tag, msg)
+    fun warning(msg: String) = Log.w(tag, msg)
+    fun error(msg: String) = Log.e(tag, msg)
+}
+
 class BDMemWidget : AppWidgetProvider() {
     override fun onUpdate(context: Context,
                           appWidgetManager: AppWidgetManager,
                           appWidgetIds: IntArray) {
-        println("Sweet zombie Jesus!")
+        log.debug("Sweet zombie Jesus!")
         for (widgetId in appWidgetIds) {
             val views = RemoteViews(context.packageName,
                     R.layout.bdmem_appwidget)
@@ -58,7 +68,7 @@ class BDMemWidget : AppWidgetProvider() {
                 row.setTextViewText(R.id.datum, datum)
                 row.setTextViewText(R.id.namn, namn)
                 views.addView(R.id.container, row)
-                println("getBirthdays: ${datum}, ${namn}")
+                log.verbose("getBirthdays: ${datum}, ${namn}")
             }
             // TODO: Uppdatera med Service istället.
             appWidgetManager.updateAppWidget(widgetId, views)
@@ -91,7 +101,7 @@ class BDMemWidget : AppWidgetProvider() {
         }.sortedBy { it.birthday }.toList()
         val nextIndex = birthdays.indexOfFirst { it.birthday >= now }
                 .let { if (it == -1) 0 else it }  // ta första om ingen hittas
-        println("Next birthday: index $nextIndex, ${birthdays[nextIndex]}")
+        log.debug("Next birthday: index $nextIndex, ${birthdays[nextIndex]}")
         return birthdays.rotated(1 - nextIndex)
     }
 }
