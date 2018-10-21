@@ -83,7 +83,7 @@ class BDMemWidget : AppWidgetProvider() {
                 past + future
             }
 
-            val dateFormat = SimpleDateFormat("dd MMM")
+            val dateFormat = SimpleDateFormat("dd MMM", Locale("sv"))
             val now = Calendar.getInstance()
             for ((birthday, upcoming) in birthdays) {
                 val namn = birthday.name
