@@ -2,7 +2,20 @@ local.properties
 bin/
 gen/
 out/
+build/
+app/release/
 
 .idea/workspace.xml
 .idea/usage.statistics.xml
 .idea/tasks.xml
+.idea/kotlinc.xml
+.idea/libraries/
+.idea/caches/
+
+gradle/
+gradlew
+gradlew.bat
+.gradle/
+
+*.jks
+*~

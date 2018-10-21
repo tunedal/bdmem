@@ -1,0 +1,17 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="nu.tunedal.bdmem">
+    <application android:allowBackup="true"
+                 android:label="@string/app_name"
+                 android:icon="@drawable/presentblue"
+                 android:theme="@style/AppTheme">
+        <receiver android:name="BDMemWidget" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                       android:resource="@xml/bdmem_appwidget_info" />
+        </receiver>
+    </application>
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-sdk android:minSdkVersion="15" />
+</manifest>
