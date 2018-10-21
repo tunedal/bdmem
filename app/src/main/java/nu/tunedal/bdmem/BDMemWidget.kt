@@ -55,6 +55,10 @@ object log {
     fun error(msg: String) = Log.e(tag, msg)
 }
 
+// De korta svenska månadsnamnen blir "feb.", "mars" o.d. på Android.
+val monthNames = arrayOf("jan", "feb", "mar", "apr", "maj", "jun",
+                         "jul", "aug", "sep", "okt", "nov", "dec")
+
 class BDMemWidget : AppWidgetProvider() {
     override fun onUpdate(context: Context,
                           appWidgetManager: AppWidgetManager,
@@ -83,12 +87,9 @@ class BDMemWidget : AppWidgetProvider() {
                 past + future
             }
 
-            val dateFormat = SimpleDateFormat("dd MMM", Locale("sv"))
             val now = Calendar.getInstance()
             for ((birthday, upcoming) in birthdays) {
-                val namn = birthday.name
                 val bdate = parseDate("yyyy-MM-dd", birthday.date)
-                val datum = dateFormat.format(bdate.time)
                 val isNextYear = now.month > bdate.month ||
                         now.month == bdate.month &&
                         now.dayOfMonth > bdate.dayOfMonth
@@ -104,11 +105,13 @@ class BDMemWidget : AppWidgetProvider() {
                     row.setTextColor(R.id.namn, color)
                     row.setTextColor(R.id.ålder, color)
                 }
-                row.setTextViewText(R.id.datum, datum)
-                row.setTextViewText(R.id.namn, namn)
+                row.setTextViewText(
+                        R.id.datum,
+                        "${bdate.dayOfMonth} ${monthNames[bdate.month - 1]}")
+                row.setTextViewText(R.id.namn, birthday.name)
                 row.setTextViewText(R.id.ålder, "$ålder år")
                 views.addView(R.id.container, row)
-                log.verbose("getBirthdays: ${datum}, ${namn}")
+                log.verbose("getBirthdays: $birthday")
             }
             // TODO: Uppdatera med Service istället.
             appWidgetManager.updateAppWidget(widgetId, views)
