@@ -97,6 +97,9 @@ class BDMemWidget : AppWidgetProvider() {
     }
 
     fun getBirthdays(context: Context, past: Int = 0): List<Birthday> {
+        val now = Calendar.getInstance().let {
+            "%02d-%02d".format(it.month, it.dayOfMonth)
+        }
         val projection = arrayOf(
                 ContactsContract.Data._ID,
                 Event.CONTACT_ID,
@@ -114,20 +117,16 @@ class BDMemWidget : AppWidgetProvider() {
                 where,
                 arrayOf(Event.CONTENT_ITEM_TYPE, "" + Event.TYPE_BIRTHDAY),
                 null)
-        val now = Calendar.getInstance().let {
-            "%02d-%02d".format(it.month, it.dayOfMonth)
+        val birthdays = cursor.use { c ->
+            c.iterator().asSequence().map {
+                Birthday(it.getString(2), it.getString(3))
+            }.sortedBy { it.birthday }.toList()
         }
-        val birthdays = cursor.iterator().asSequence().map {
-            Birthday(it.getString(2), it.getString(3))
-        }.sortedBy { it.birthday }.toList()
-        if (birthdays.isEmpty()) {
+        if (birthdays.isEmpty())
             return emptyList()
-        }
-        else {
-            val nextIndex = birthdays.indexOfFirst { it.birthday >= now }
-                    .let { if (it == -1) 0 else it }  // första om ingen hittas
-            log.debug("Next birthday: index $nextIndex, ${birthdays[nextIndex]}")
-            return birthdays.rotated(past - nextIndex)
-        }
+        val nextIndex = birthdays.indexOfFirst { it.birthday >= now }
+                .let { if (it == -1) 0 else it }  // första om ingen hittas
+        log.debug("Next birthday: index $nextIndex, ${birthdays[nextIndex]}")
+        return birthdays.rotated(past - nextIndex)
     }
 }
