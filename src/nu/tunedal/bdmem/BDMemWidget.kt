@@ -10,6 +10,7 @@ import android.provider.ContactsContract.CommonDataKinds.Event
 import java.util.Calendar
 import android.app.PendingIntent
 import android.content.Intent
+import android.graphics.Color
 import android.util.Log
 
 class CursorIterator(val cursor: Cursor): Iterator<Cursor> {
@@ -19,6 +20,11 @@ class CursorIterator(val cursor: Cursor): Iterator<Cursor> {
 }
 
 operator fun Cursor.iterator() = CursorIterator(this)
+
+fun <T: Any> Iterator<T>.consume(count: Int): Sequence<T> {
+    var i = 0
+    return generateSequence { if (i++ < count && hasNext()) next() else null }
+}
 
 data class Birthday(val name: String, val date: String) {
     val birthday get() = date.substring(5)
@@ -63,9 +69,23 @@ class BDMemWidget : AppWidgetProvider() {
                     PendingIntent.FLAG_UPDATE_CURRENT)
             views.setOnClickPendingIntent(R.id.container, pendingIntent)
 
-            for ((namn, datum) in getBirthdays(context).take(5)) {
+            val showPast = 1
+            val lines = 5
+            val birthdays = getBirthdays(context, showPast).iterator().let {
+                val past = it.consume(showPast).map { it to false }
+                val future = it.consume(lines - showPast).map { it to true }
+                past + future
+            }
+
+            for ((birthday, upcoming) in birthdays) {
+                val (namn, datum) = birthday
                 val row = RemoteViews(context.packageName,
                         R.layout.widget_row)
+                if (!upcoming) {
+                    val color = Color.GRAY
+                    row.setTextColor(R.id.datum, color)
+                    row.setTextColor(R.id.namn, color)
+                }
                 row.setTextViewText(R.id.datum, datum)
                 row.setTextViewText(R.id.namn, namn)
                 views.addView(R.id.container, row)
@@ -76,7 +96,7 @@ class BDMemWidget : AppWidgetProvider() {
         }
     }
 
-    fun getBirthdays(context: Context): List<Birthday> {
+    fun getBirthdays(context: Context, past: Int = 0): List<Birthday> {
         val projection = arrayOf(
                 ContactsContract.Data._ID,
                 Event.CONTACT_ID,
@@ -107,7 +127,7 @@ class BDMemWidget : AppWidgetProvider() {
             val nextIndex = birthdays.indexOfFirst { it.birthday >= now }
                     .let { if (it == -1) 0 else it }  // första om ingen hittas
             log.debug("Next birthday: index $nextIndex, ${birthdays[nextIndex]}")
-            return birthdays.rotated(1 - nextIndex)
+            return birthdays.rotated(past - nextIndex)
         }
     }
 }
