@@ -12,6 +12,7 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.Color
 import android.util.Log
+import java.text.SimpleDateFormat
 
 class CursorIterator(val cursor: Cursor): Iterator<Cursor> {
     private var valid = cursor.moveToFirst().also { cursor.move(-1) }
@@ -37,8 +38,13 @@ fun <T> MutableList<T>.rotate(offset: Int) {
 fun <T> Collection<T>.rotated(offset: Int): List<T> =
         toMutableList().apply { rotate(offset) }
 
+val Calendar.year get() = get(Calendar.YEAR)
 val Calendar.month get() = get(Calendar.MONTH) + 1
 val Calendar.dayOfMonth get() = get(Calendar.DAY_OF_MONTH)
+
+fun parseDate(format: String, value: String) = Calendar.getInstance().apply {
+    time = SimpleDateFormat(format).parse(value)
+}
 
 object log {
     private const val tag = "BDMem"
@@ -77,17 +83,30 @@ class BDMemWidget : AppWidgetProvider() {
                 past + future
             }
 
+            val dateFormat = SimpleDateFormat("dd MMM")
+            val now = Calendar.getInstance()
             for ((birthday, upcoming) in birthdays) {
-                val (namn, datum) = birthday
+                val namn = birthday.name
+                val bdate = parseDate("yyyy-MM-dd", birthday.date)
+                val datum = dateFormat.format(bdate.time)
+                val isNextYear = now.month > bdate.month ||
+                        now.month == bdate.month &&
+                        now.dayOfMonth > bdate.dayOfMonth
+                val ålder = when {
+                    isNextYear && upcoming -> 1 + now.year - bdate.year
+                    else -> now.year - bdate.year
+                }
                 val row = RemoteViews(context.packageName,
                         R.layout.widget_row)
                 if (!upcoming) {
                     val color = Color.GRAY
                     row.setTextColor(R.id.datum, color)
                     row.setTextColor(R.id.namn, color)
+                    row.setTextColor(R.id.ålder, color)
                 }
                 row.setTextViewText(R.id.datum, datum)
                 row.setTextViewText(R.id.namn, namn)
+                row.setTextViewText(R.id.ålder, "$ålder år")
                 views.addView(R.id.container, row)
                 log.verbose("getBirthdays: ${datum}, ${namn}")
             }
